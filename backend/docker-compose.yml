@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: topup_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: topup_admin
+      POSTGRES_PASSWORD: topup_password
+      POSTGRES_DB: topup_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

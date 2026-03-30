@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  role              String   @default("player") // "player", "staff", "admin"
+  fullName          String
+  username          String   @unique
+  email             String?  @unique
+  phone             String?  @unique
+  passwordHash      String
+  profileImageUrl   String?
+  status            String   @default("active")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  gameCredentials   UserGameCredential[]
+  topUpOrders       TopUpOrder[]
+  withdrawOrders    WithdrawOrder[]
+}
+
+model Game {
+  id                String   @id @default(uuid())
+  name              String
+  imageUrl          String?
+  downloadLink      String?
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  credentials       UserGameCredential[]
+  topUpOrders       TopUpOrder[]
+}
+
+model UserGameCredential {
+  id                      String   @id @default(uuid())
+  userId                  String
+  gameId                  String
+  gameUsername            String
+  gamePasswordEncrypted   String
+  assignedBy              String?
+  assignedAt              DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  user                    User     @relation(fields: [userId], references: [id])
+  game                    Game     @relation(fields: [gameId], references: [id])
+}
+
+model PaymentMethod {
+  id                String   @id @default(uuid())
+  name              String
+  qrImageUrl        String?
+  paymentTag        String?
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  topUpOrders       TopUpOrder[]
+  withdrawOrders    WithdrawOrder[]
+}
+
+model TopUpOrder {
+  id                String   @id @default(uuid())
+  orderNumber       String   @unique
+  userId            String
+  gameId            String
+  paymentMethodId   String
+  amount            Float
+  status            String   @default("Processing") // Processing, Verified, Completed, Rejected, Cancelled
+  processedBy       String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user              User          @relation(fields: [userId], references: [id])
+  game              Game          @relation(fields: [gameId], references: [id])
+  paymentMethod     PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+}
+
+model WithdrawOrder {
+  id                  String   @id @default(uuid())
+  orderNumber         String   @unique
+  userId              String
+  paymentMethodId     String
+  payoutTag           String
+  amount              Float
+  status              String   @default("Pending") // Pending, Processing, Paid, Rejected, Cancelled
+  eligibilitySnapshot String?
+  processedBy         String?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User          @relation(fields: [userId], references: [id])
+  paymentMethod       PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+}
+
+model HomeContent {
+  id                String   @id @default(uuid())
+  type              String   // promo, event, announcement, quote
+  title             String
+  body              String?
+  imageUrl          String?
+  isActive          Boolean  @default(true)
+  startAt           DateTime?
+  endAt             DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model FAQ {
+  id                String   @id @default(uuid())
+  question          String
+  answer            String
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Settings {
+  id                String   @id @default(uuid())
+  key               String   @unique
+  value             String
+  updatedBy         String?
+  updatedAt         DateTime @updatedAt
+}
+
+model AuditLog {
+  id                String   @id @default(uuid())
+  actorUserId       String
+  actorRole         String
+  actionType        String
+  targetType        String
+  targetId          String
+  description       String
+  oldValueJson      String?
+  newValueJson      String?
+  createdAt         DateTime @default(now())
+}

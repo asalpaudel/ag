@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs wc:*)",
+      "Bash(ls -la /d/ag/backend/*.json /d/ag/backend/*.yml)",
+      "Bash(ls /d/ag/admin-panel/*.*)"
+    ]
+  }
+}
